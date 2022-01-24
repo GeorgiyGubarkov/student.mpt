@@ -2,15 +2,29 @@ from app import db, login
 from datetime import datetime
 from flask_login import UserMixin
 
+
+users_roles = db.Table('users_roles',
+    db.Column('user_id', db.String(100), db.ForeignKey('users.id')),
+    db.Column(('role_id'), db.Integer, db.ForeignKey('roles.id'))
+)
 class User(db.Model, UserMixin):
+    __tablename__ = 'users'
     id = db.Column(db.String(100), primary_key=True)
     admin = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(45))
     surname = db.Column(db.String(45))
     secondname = db.Column(db.String(45))
     email = db.Column(db.String(60), unique=True)
-    # certificates = db.relationship('Certificate', backref='users', lazy=False, uselist=False)
-    # characteristics = db.relationship('Characteristic', backref='users', lazy=False, uselist=False)
+    group_id = db.Column(
+        db.Integer, 
+        db.ForeignKey(
+            'groups.id', 
+            ondelete='cascade', 
+            onupdate='cascade'), 
+            nullable=True)
+    certificates = db.relationship('Certificate', backref='user', lazy='joined')
+    characteristics = db.relationship('Characteristic', backref='user', lazy='joined')
+    payments = db.relationship('Payment', backref='user', lazy='joined')
 
     def get_name(self, id):
         return User.query.filter(self.id == id).first().name
@@ -19,6 +33,15 @@ class Group(db.Model):
     __tablename__ = 'groups'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(15), unique=True)
+    users = db.relationship('User', backref='groups', lazy='joined')
+    speciality_id = db.Column(
+                              db.Integer, 
+                              db.ForeignKey(
+                                  'specialitys.id', 
+                                  ondelete='cascade', 
+                                  onupdate='cascade'), 
+                              nullable=True)
+
 
 class Speciality(db.Model):
     __tablename__ = 'specialitys'
@@ -30,6 +53,8 @@ class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(45), unique=True)
+    users = db.relationship('User', secondary='users_roles',
+        backref=db.backref('roles', lazy='dynamic'))
 
 class Certificate(db.Model):    # Справки
     __tablename__ = 'certificates'
@@ -38,6 +63,7 @@ class Certificate(db.Model):    # Справки
     remove_date = db.Column(db.Date, index=True, nullable=True)
     archive = db.Column(db.Boolean, default=False)
     text = db.Column(db.String(300))
+    user_id = db.Column(db.String(100), db.ForeignKey('users.id', onupdate='cascade'), nullable=False)
 
 class Characteristic(db.Model): # Характеристики
     __tablename__ = 'characteristics'
@@ -50,6 +76,7 @@ class Characteristic(db.Model): # Характеристики
     create_date = db.Column(db.Date, index=True, default=datetime.utcnow)
     remove_date = db.Column(db.Date, index=True, nullable=True)
     archive = db.Column(db.Boolean, default=False)
+    user_id = db.Column(db.String(100), db.ForeignKey('users.id', onupdate='cascade'), nullable=False)
 
 class Payment(db.Model):    # Платёжки
     __tablename__ = 'payments'
@@ -57,6 +84,7 @@ class Payment(db.Model):    # Платёжки
     payment = db.Column(db.String(300), nullable=False)
     semestr = db.Column(db.String(45), nullable=False)
     create_date = db.Column(db.Date, index=True, default=datetime.utcnow)
+    user_id = db.Column(db.String(100), db.ForeignKey('users.id', onupdate='cascade'), nullable=False)
 
 @login.user_loader
 def load_user(id):
