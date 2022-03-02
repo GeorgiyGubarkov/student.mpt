@@ -10,7 +10,6 @@ users_roles = db.Table('users_roles',
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.String(100), primary_key=True)
-    admin = db.Column(db.Boolean, default=False) #! удалить
     name = db.Column(db.String(45))
     surname = db.Column(db.String(45))
     secondname = db.Column(db.String(45))
@@ -64,6 +63,12 @@ class Certificate(db.Model):    # Справки
     archive = db.Column(db.Boolean, default=False)
     text = db.Column(db.String(300))
     user_id = db.Column(db.String(100), db.ForeignKey('users.id', onupdate='cascade'), nullable=False)
+    status_id = db.Column(
+                          db.Integer, 
+                          db.ForeignKey(
+                              'statuses.id', 
+                              ondelete='cascade', 
+                              onupdate='cascade'))
 
     def get_all_raws():
         return [{
@@ -88,6 +93,29 @@ class Characteristic(db.Model): # Характеристики
     remove_date = db.Column(db.Date, index=True, nullable=True)
     archive = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.String(100), db.ForeignKey('users.id', onupdate='cascade'), nullable=False)
+    status_id = db.Column(
+                          db.Integer, 
+                          db.ForeignKey(
+                              'statuses.id', 
+                              ondelete='cascade', 
+                              onupdate='cascade'))
+
+    def get_all_raws():
+        return [{
+            'id': r.id,
+            'name': User.query.filter(User.id==r.user_id).first().name,
+            'surname': User.query.filter(User.id==r.user_id).first().surname,
+            'secondname': User.query.filter(User.id==r.user_id).first().secondname,
+            'email': User.query.filter(User.id==r.user_id).first().email,
+            'archive': r.archive,
+        } for r in Characteristic.query.all()]
+
+class Status(db.Model):
+    __tablename__ = 'statuses'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(20))
+    certificates = db.relationship('Certificate', backref='statuses', lazy='joined')
+    characteristics = db.relationship('Characteristic', backref='statuses', lazy='joined')
 
 class Payment(db.Model):    # Платёжки
     __tablename__ = 'payments'
