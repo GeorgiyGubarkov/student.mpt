@@ -10,7 +10,7 @@ users_roles = db.Table('users_roles',
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.String(100), primary_key=True)
-    admin = db.Column(db.Boolean, default=False)
+    admin = db.Column(db.Boolean, default=False) #! удалить
     name = db.Column(db.String(45))
     surname = db.Column(db.String(45))
     secondname = db.Column(db.String(45))
@@ -64,6 +64,17 @@ class Certificate(db.Model):    # Справки
     archive = db.Column(db.Boolean, default=False)
     text = db.Column(db.String(300))
     user_id = db.Column(db.String(100), db.ForeignKey('users.id', onupdate='cascade'), nullable=False)
+
+    def get_all_raws():
+        return [{
+            'id': r.id,
+            'name': User.query.filter(User.id==r.user_id).first().name,
+            'surname': User.query.filter(User.id==r.user_id).first().surname,
+            'secondname': User.query.filter(User.id==r.user_id).first().secondname,
+            'email': User.query.filter(User.id==r.user_id).first().email,
+            'text': r.text,
+            'archive': r.archive,
+        } for r in Certificate.query.all()]
 
 class Characteristic(db.Model): # Характеристики
     __tablename__ = 'characteristics'

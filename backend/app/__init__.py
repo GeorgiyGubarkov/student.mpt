@@ -24,4 +24,4 @@ login = LoginManager(app)
 login_view = 'index'
 CORS(app, resources={r'/*': {'origins': '*'}})
 
-from app import routes, models
+from app import routes, models # ImportError
