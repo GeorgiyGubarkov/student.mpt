@@ -40,7 +40,6 @@ def remove_update_certificate(id):
     if certificate is None:
         return 'Bad Gateway'
     if request.method == 'PUT':
-        certificate.archive = True
         certificate.remove_date = datetime.utcnow()
         db.session.commit()
         return 'Seccess'

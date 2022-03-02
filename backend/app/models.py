@@ -60,7 +60,6 @@ class Certificate(db.Model):    # Справки
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     create_date = db.Column(db.Date, index=True, default=datetime.utcnow)
     remove_date = db.Column(db.Date, index=True, nullable=True)
-    archive = db.Column(db.Boolean, default=False)
     text = db.Column(db.String(300))
     user_id = db.Column(db.String(100), db.ForeignKey('users.id', onupdate='cascade'), nullable=False)
     status_id = db.Column(
@@ -78,7 +77,6 @@ class Certificate(db.Model):    # Справки
             'secondname': User.query.filter(User.id==r.user_id).first().secondname,
             'email': User.query.filter(User.id==r.user_id).first().email,
             'text': r.text,
-            'archive': r.archive,
         } for r in Certificate.query.all()]
 
 class Characteristic(db.Model): # Характеристики
@@ -91,7 +89,6 @@ class Characteristic(db.Model): # Характеристики
     place = db.Column(db.String(100))
     create_date = db.Column(db.Date, index=True, default=datetime.utcnow)
     remove_date = db.Column(db.Date, index=True, nullable=True)
-    archive = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.String(100), db.ForeignKey('users.id', onupdate='cascade'), nullable=False)
     status_id = db.Column(
                           db.Integer, 
@@ -107,7 +104,6 @@ class Characteristic(db.Model): # Характеристики
             'surname': User.query.filter(User.id==r.user_id).first().surname,
             'secondname': User.query.filter(User.id==r.user_id).first().secondname,
             'email': User.query.filter(User.id==r.user_id).first().email,
-            'archive': r.archive,
         } for r in Characteristic.query.all()]
 
 class Status(db.Model):
