@@ -10,7 +10,6 @@ users_roles = db.Table('users_roles',
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.String(100), primary_key=True)
-    admin = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(45))
     surname = db.Column(db.String(45))
     secondname = db.Column(db.String(45))
@@ -61,9 +60,24 @@ class Certificate(db.Model):    # Справки
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     create_date = db.Column(db.Date, index=True, default=datetime.utcnow)
     remove_date = db.Column(db.Date, index=True, nullable=True)
-    archive = db.Column(db.Boolean, default=False)
     text = db.Column(db.String(300))
     user_id = db.Column(db.String(100), db.ForeignKey('users.id', onupdate='cascade'), nullable=False)
+    status_id = db.Column(
+                          db.Integer, 
+                          db.ForeignKey(
+                              'statuses.id', 
+                              ondelete='cascade', 
+                              onupdate='cascade'))
+
+    def get_all_raws():
+        return [{
+            'id': r.id,
+            'name': User.query.filter(User.id==r.user_id).first().name,
+            'surname': User.query.filter(User.id==r.user_id).first().surname,
+            'secondname': User.query.filter(User.id==r.user_id).first().secondname,
+            'email': User.query.filter(User.id==r.user_id).first().email,
+            'text': r.text,
+        } for r in Certificate.query.all()]
 
 class Characteristic(db.Model): # Характеристики
     __tablename__ = 'characteristics'
@@ -75,8 +89,29 @@ class Characteristic(db.Model): # Характеристики
     place = db.Column(db.String(100))
     create_date = db.Column(db.Date, index=True, default=datetime.utcnow)
     remove_date = db.Column(db.Date, index=True, nullable=True)
-    archive = db.Column(db.Boolean, default=False)
     user_id = db.Column(db.String(100), db.ForeignKey('users.id', onupdate='cascade'), nullable=False)
+    status_id = db.Column(
+                          db.Integer, 
+                          db.ForeignKey(
+                              'statuses.id', 
+                              ondelete='cascade', 
+                              onupdate='cascade'))
+
+    def get_all_raws():
+        return [{
+            'id': r.id,
+            'name': User.query.filter(User.id==r.user_id).first().name,
+            'surname': User.query.filter(User.id==r.user_id).first().surname,
+            'secondname': User.query.filter(User.id==r.user_id).first().secondname,
+            'email': User.query.filter(User.id==r.user_id).first().email,
+        } for r in Characteristic.query.all()]
+
+class Status(db.Model):
+    __tablename__ = 'statuses'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(20))
+    certificates = db.relationship('Certificate', backref='statuses', lazy='joined')
+    characteristics = db.relationship('Characteristic', backref='statuses', lazy='joined')
 
 class Payment(db.Model):    # Платёжки
     __tablename__ = 'payments'
