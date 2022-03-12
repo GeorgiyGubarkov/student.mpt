@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  flask:
+    build: ./backend
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/backend
+    networks:
+      - backend-network
+    ports:
+      - 5000:5000
+    depends_on: 
+        - dbPostgres
+    command: flask run --host=0.0.0.0
+
+  dbPostgres:
+    image: postgres:latest
+    restart: always
+    ports:
+        - 5432:5432
+    env_file:
+      - .env
+
+
+  adminer:
+    image: adminer:latest
+    restart: always
+    ports:
+      - "${DB_MANAGER_PORT}:8080"
+    depends_on:
+      - dbPostgres
+
+networks:
+    backend-network:
+        driver: bridge
