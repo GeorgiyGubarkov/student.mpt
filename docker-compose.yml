@@ -6,17 +6,16 @@ services:
     env_file:
       - .env
     volumes:
-      - ./backend:/backend
-    networks:
-      - backend-network
+      - .:/usr/src/app/
     ports:
       - 5000:5000
+    working_dir: /usr/src/app/backend
     depends_on: 
         - dbPostgres
     command: flask run --host=0.0.0.0
 
   dbPostgres:
-    image: postgres:latest
+    image: postgres:alpine
     restart: always
     ports:
         - 5432:5432
@@ -31,7 +30,3 @@ services:
       - "${DB_MANAGER_PORT}:8080"
     depends_on:
       - dbPostgres
-
-networks:
-    backend-network:
-        driver: bridge
