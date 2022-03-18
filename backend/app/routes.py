@@ -5,10 +5,6 @@ from config import Config
 from flask import redirect, request, jsonify, url_for
 from flask_login import current_user, login_user, logout_user
 
-@app.route('/')
-def index():
-    return 'Simple application'
-
 @app.route('/certificate', methods=['GET', 'POST'])
 def certificate():
     current_user = User.query.filter(User.id=='123').first()
